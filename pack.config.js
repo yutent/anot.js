@@ -53,6 +53,15 @@ const PAD_END = Buffer.from(`
       fn(Anot)
     }
   }
+  var _Anot = window.Anot
+  Anot.noConflict = function(deep) {
+    if (deep && window.Anot === Anot) {
+      window.Anot = _Anot
+    }
+    return Anot
+  }
+
+  window.Anot = Anot
   return Anot
 })()
 module.exports = _Anot
@@ -64,11 +73,33 @@ const PAD_END_NEXT = Buffer.from(`
  **********************************************************************/
 
   var CSS_DEPS = {}
-  function importCss(url) {
-    url = url.replace(/^\\/+/, '/')
-    if (window.LIBS_BASE_URL) {
-      url = window.LIBS_BASE_URL + url
+  function getBaseUrl() {
+    var stack
+    try {
+      throw new Error() // 强制报错,以便捕获e.stack
+    } catch (err) {
+      stack = err.stack
     }
+    stack = stack.trim().split(/[@ ]+/)
+    if (window.safari) {
+      stack = stack[1]
+    } else {
+      stack = stack.pop()
+    }
+    stack = stack.replace(/(:\\d+)?:\d+([\\w\\W]*)?$/i, '')
+    window.LIBS_BASE_URL = stack.replace(/^([a-z\-]*):\\/\\/([^\\/]+)(\\/.*)?/, '$1://$2')
+  }
+
+  function importCss(url, baseUrl) {
+    url = url.replace(/^\\/+/, '/')
+    if (baseUrl) {
+      url = baseUrl + url
+    } else {
+      if (window.LIBS_BASE_URL) {
+        url = window.LIBS_BASE_URL + url
+      }
+    }
+    
     if (CSS_DEPS[url]) {
       return
     }
@@ -78,6 +109,7 @@ const PAD_END_NEXT = Buffer.from(`
     )
     CSS_DEPS[url] = 1
   }
+  getBaseUrl()
 
 
 /*********************************************************************
@@ -107,6 +139,15 @@ const PAD_END_NEXT = Buffer.from(`
     }
   }
   window.importCss = importCss
+  var _Anot = window.Anot
+  Anot.noConflict = function(deep) {
+    if (deep && window.Anot === Anot) {
+      window.Anot = _Anot
+    }
+    return Anot
+  }
+
+  window.Anot = Anot
   return Anot
 })()
 export default _Anot
@@ -205,19 +246,54 @@ function packNoCompress(file) {
   let touchModule = fs.cat('./src/lib/touch.js')
   let amdModule = fs.cat('./src/lib/amd.js')
 
-  let shim = Buffer.concat(libs.concat(amdModule))
+  let nextVer = Buffer.concat(libs)
+  let touchNext = Buffer.concat([nextVer, touchModule])
+  let shim = Buffer.concat([nextVer, amdModule])
   let touchShim = Buffer.concat([shim, touchModule])
 
+  /**
+   * --------------------------------------------------------
+   * 打包未来版的 anot
+   * --------------------------------------------------------
+   */
+  fs.echo(
+    Buffer.concat([PAD_START, nextVer, PAD_END_NEXT]),
+    './dist/anot.next.js'
+  )
+  log('%s 打包完成...', chalk.green('anot.next.js'))
+
+  /**
+   * --------------------------------------------------------
+   * 打包带触摸事件的未来版的 anot
+   * --------------------------------------------------------
+   */
+  fs.echo(
+    Buffer.concat([PAD_START, touchNext, PAD_END_NEXT]),
+    './dist/anot-touch.next.js'
+  )
+  log('%s 打包完成...', chalk.green('anot-touch.next.js'))
+
+  /**
+   * --------------------------------------------------------
+   * 打包自带AMD加载器的 anot
+   * --------------------------------------------------------
+   */
   fs.echo(
     Buffer.concat([PAD_START_SHIM, shim, PAD_END_SHIM]),
     './dist/anot.shim.js'
   )
-  log(chalk.green('anot.shim.js 打包完成...'))
+  log('%s 打包完成...', chalk.green('anot.shim.js'))
+
+  /**
+   * --------------------------------------------------------
+   * 打包自带AMD加载器及触摸事件的 anot
+   * --------------------------------------------------------
+   */
   fs.echo(
     Buffer.concat([PAD_START_SHIM, touchShim, PAD_END_SHIM]),
     './dist/anot-touch.shim.js'
   )
-  log(chalk.green('anot-touch.shim.js 打包完成...'))
+  log('%s 打包完成...', chalk.green('anot-touch.shim.js'))
 }
 
 // 打包并压缩
@@ -267,7 +343,6 @@ function packAndCompress() {
    * 打包自带AMD加载器的 anot
    * --------------------------------------------------------
    */
-
   log('正在打包 anot.shim.js...')
   let shimVer = Buffer.concat([PAD_START_SHIM, shim, PAD_END_SHIM]).toString()
   fs.echo(
@@ -281,7 +356,6 @@ function packAndCompress() {
    * 打包自带AMD加载器及触摸事件的 anot
    * --------------------------------------------------------
    */
-
   log('正在打包 anot-touch.shim.js...')
   let touchShimVer = Buffer.concat([
     PAD_START_SHIM,
@@ -299,7 +373,6 @@ function packAndCompress() {
    * 打包未来版的 anot
    * --------------------------------------------------------
    */
-
   log('正在打包 anot.next.js...')
   let nextVer = Buffer.concat([PAD_START, normal, PAD_END_NEXT]).toString()
   fs.echo(
@@ -313,7 +386,6 @@ function packAndCompress() {
    * 打包带触摸事件的未来版的 anot
    * --------------------------------------------------------
    */
-
   log('正在打包 anot-touch.next.js...')
   let touchNextVer = Buffer.concat([
     PAD_START,
@@ -337,7 +409,6 @@ switch (mode) {
       .watch(path.resolve('./src/'))
       .on('all', (act, file) => {
         if (!ready) {
-          log(act, file)
           return
         }
         if (act === 'add' || act === 'change') {
