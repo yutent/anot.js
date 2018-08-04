@@ -26,6 +26,7 @@
     "iofs": "^1.1.0",
     "uglify-es": "^3.3.9"
   },
+  "repository": "https://github.com/yutent/anot.js.git",
   "author": "yutent",
   "license": "MIT"
 }
