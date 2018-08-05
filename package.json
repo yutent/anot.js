@@ -1,6 +1,6 @@
 {
   "name": "anot",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Anot - 迷你mvvm框架",
   "main": "dist/anot.js",
   "files": [

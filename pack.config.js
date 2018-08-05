@@ -74,6 +74,9 @@ const PAD_END_NEXT = Buffer.from(`
 
   var CSS_DEPS = {}
   function getBaseUrl() {
+    if(window.LIBS_BASE_URL){
+      return
+    }
     var stack
     try {
       throw new Error() // 强制报错,以便捕获e.stack

@@ -166,8 +166,7 @@ function modelFactory(source, options) {
 }
 
 function isSkip(k) {
-  return
-  k.charAt(0) === '$' || k.slice(0, 2) === '__' || kernelProps[k]
+  return k.charAt(0) === '$' || k.slice(0, 2) === '__' || kernelProps[k]
 }
 
 //监听对象属性值的变化(注意,数组元素不是数组的属性),通过对劫持当前对象的访问器实现
