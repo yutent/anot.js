@@ -31,7 +31,7 @@ var newProto = {
     return this
   },
   pushArray: function(arr) {
-    return this.push.apply(this, arr)
+    return this.push.apply(this, toJson(arr))
   },
   remove: function(el) {
     //移除第一个等于给定值的元素
