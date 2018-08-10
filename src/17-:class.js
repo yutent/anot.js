@@ -1,6 +1,7 @@
 //类名定义， :class="xx:yy"  :class="{xx: yy}" :class="xx" :class="{{xx}}"
 Anot.directive('class', {
   init: function(binding) {
+    binding.expr = binding.expr.replace(/\n/g, '  ').replace(/\s{2,}/g, '  ')
     var expr = []
     if (!/^\{.*\}$/.test(binding.expr)) {
       expr = binding.expr.split(':')
