@@ -125,7 +125,7 @@ Anot.directive('for', {
           var valueItem = value[i]
           proxy[param] = valueItem //index
           if (Object(valueItem) === valueItem) {
-            valueItem.$ups = valueItem.$ups || {}
+            hideProperty(valueItem, '$ups', valueItem.$ups || {})
             valueItem.$ups[param] = proxy
           }
         } else {
