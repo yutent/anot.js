@@ -120,11 +120,9 @@ function getOptionsFromTag(elem, vmodels) {
           if (vm.$id.slice(0, 10) === 'proxy-each') {
             vm = vm.$up
           }
-          if (
-            vm.hasOwnProperty(attr.value) &&
-            typeof vm[attr.value] === 'function'
-          ) {
-            ret[camelizeName] = vm[attr.value].bind(vm)
+          var fn = parseVmValue(vm, attr.value)
+          if (fn && typeof fn === 'function') {
+            ret[camelizeName] = fn.bind(vm)
           }
         } else {
           ret[camelizeName] = parseData(attr.value)
