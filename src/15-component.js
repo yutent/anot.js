@@ -17,12 +17,24 @@ function parseSlot(collections, vms) {
   arr.forEach(function(elem) {
     switch (elem.nodeType) {
       case 1:
-        var slot = elem.getAttribute('slot')
+        var isSlotTag = elem.tagName === 'SLOT'
+        var slotKey = null
+        var isSlotAttr = elem.getAttribute('slot')
 
-        if (slot) {
-          obj[slot] = obj[slot] || []
+        if (isSlotTag) {
+          slotKey = elem.name || elem.getAttribute('name')
+        } else if (isSlotAttr) {
+          slotKey = isSlotAttr
+        }
+
+        if (slotKey) {
+          obj[slotKey] = obj[slotKey] || []
           elem.removeAttribute('slot')
-          obj[slot].push(elem.outerHTML)
+          if (isSlotTag) {
+            obj[slotKey].push(elem.innerHTML)
+          } else {
+            obj[slotKey].push(elem.outerHTML)
+          }
         } else {
           var txt = elem.outerHTML
           if (isWidget(elem) || /:[\w-]*=".*"/.test(txt)) {
