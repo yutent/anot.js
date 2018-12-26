@@ -1,23 +1,15 @@
 {
   "name": "anot",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "description": "Anot - 迷你mvvm框架",
   "main": "dist/anot.js",
-  "files": [
-    "dist"
-  ],
+  "files": ["dist"],
   "scripts": {
     "start": "npm run dev",
     "dev": "node ./pack.config.js dev",
     "prod": "node ./pack.config.js prod"
   },
-  "keywords": [
-    "anot",
-    "avalon",
-    "mvvm",
-    "doui",
-    "yutent"
-  ],
+  "keywords": ["anot", "avalon", "mvvm", "doui", "yutent"],
   "dependencies": {},
   "devDependencies": {
     "chalk": "^2.4.1",
