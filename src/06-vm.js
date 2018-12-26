@@ -307,7 +307,6 @@ function observeObject(source, options) {
     $vmodel[name] = source[name]
   })
 
-  /* jshint ignore:start */
   // hideProperty($vmodel, '$ups', null)
   hideProperty($vmodel, '$id', 'anonymous')
   hideProperty($vmodel, '$up', old ? old.$up : null)
@@ -343,9 +342,7 @@ function observeObject(source, options) {
       }
     })
   }
-  /* jshint ignore:end */
 
-  //必须设置了$active,$events
   simple.forEach(function(name) {
     var oldVal = old && old[name]
     var val = ($vmodel[name] = state[name])
@@ -373,8 +370,10 @@ function observeObject(source, options) {
 
   $vmodel.$active = true
 
-  if (old && old.$up && old.$up.$children) {
-    old.$up.$children.push($vmodel)
+  if ($vmodel.$id !== 'anonymous') {
+    if (old && old.$up && old.$up.$children) {
+      old.$up.$children.push($vmodel)
+    }
   }
 
   return $vmodel
