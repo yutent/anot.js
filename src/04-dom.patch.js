@@ -18,18 +18,18 @@ Anot.contains = function(root, el) {
 }
 
 if (window.SVGElement) {
-  var svgns = 'http://www.w3.org/2000/svg'
-  var svg = DOC.createElementNS(svgns, 'svg')
+  let svgns = 'http://www.w3.org/2000/svg'
+  let svg = DOC.createElementNS(svgns, 'svg')
   svg.innerHTML = '<circle cx="50" cy="50" r="40" fill="red" />'
   if (!rsvg.test(svg.firstChild)) {
     // #409
     /* jshint ignore:start */
     function enumerateNode(node, targetNode) {
       if (node && node.childNodes) {
-        var nodes = node.childNodes
-        for (var i = 0, el; (el = nodes[i++]); ) {
+        let nodes = node.childNodes
+        for (let i = 0, el; (el = nodes[i++]); ) {
           if (el.tagName) {
-            var svg = DOC.createElementNS(svgns, el.tagName.toLowerCase())
+            let svg = DOC.createElementNS(svgns, el.tagName.toLowerCase())
             // copy attrs
             ap.forEach.call(el.attributes, function(attr) {
               svg.setAttribute(attr.name, attr.value)
@@ -51,7 +51,7 @@ if (window.SVGElement) {
           return new XMLSerializer().serializeToString(this)
         },
         set: function(html) {
-          var tagName = this.tagName.toLowerCase(),
+          let tagName = this.tagName.toLowerCase(),
             par = this.parentNode,
             frag = Anot.parseHTML(html)
           // 操作的svg，直接插入
@@ -59,7 +59,7 @@ if (window.SVGElement) {
             par.insertBefore(frag, this)
             // svg节点的子节点类似
           } else {
-            var newFrag = DOC.createDocumentFragment()
+            let newFrag = DOC.createDocumentFragment()
             enumerateNode(frag, newFrag)
             par.insertBefore(newFrag, this)
           }
@@ -70,18 +70,18 @@ if (window.SVGElement) {
         enumerable: true,
         configurable: true,
         get: function() {
-          var s = this.outerHTML
-          var ropen = new RegExp(
+          let s = this.outerHTML
+          let ropen = new RegExp(
             '<' + this.nodeName + '\\b(?:(["\'])[^"]*?(\\1)|[^>])*>',
             'i'
           )
-          var rclose = new RegExp('</' + this.nodeName + '>$', 'i')
+          let rclose = new RegExp('</' + this.nodeName + '>$', 'i')
           return s.replace(ropen, '').replace(rclose, '')
         },
         set: function(html) {
           if (Anot.clearHTML) {
             Anot.clearHTML(this)
-            var frag = Anot.parseHTML(html)
+            let frag = Anot.parseHTML(html)
             enumerateNode(frag, this)
           }
         }
@@ -92,7 +92,7 @@ if (window.SVGElement) {
 
 //========================= event binding ====================
 
-var eventHooks = Anot.eventHooks
+let eventHooks = Anot.eventHooks
 
 //针对firefox, chrome修正mouseenter, mouseleave(chrome30+)
 if (!('onmouseenter' in root)) {
@@ -106,7 +106,7 @@ if (!('onmouseenter' in root)) {
         type: fixType,
         fix: function(elem, fn) {
           return function(e) {
-            var t = e.relatedTarget
+            let t = e.relatedTarget
             if (!t || (t !== elem && !(elem.compareDocumentPosition(t) & 16))) {
               delete e.type
               e.type = origType

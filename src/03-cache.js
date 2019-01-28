@@ -1,5 +1,5 @@
 // https://github.com/rsms/js-lru
-var Cache = new function() {
+let Cache = new function() {
   // jshint ignore:line
   function LRU(maxLength) {
     this.size = 0
@@ -8,10 +8,10 @@ var Cache = new function() {
     this._keymap = {}
   }
 
-  var p = LRU.prototype
+  let p = LRU.prototype
 
   p.put = function(key, value) {
-    var entry = {
+    let entry = {
       key: key,
       value: value
     }
@@ -32,7 +32,7 @@ var Cache = new function() {
   }
 
   p.shift = function() {
-    var entry = this.head
+    let entry = this.head
     if (entry) {
       this.head = this.head.newer
       this.head.older = entry.newer = entry.older = this._keymap[
@@ -42,7 +42,7 @@ var Cache = new function() {
     }
   }
   p.get = function(key) {
-    var entry = this._keymap[key]
+    let entry = this._keymap[key]
     if (entry === void 0) return
     if (entry === this.tail) {
       return entry.value

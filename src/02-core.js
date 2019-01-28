@@ -1,4 +1,4 @@
-var Anot = function(el) {
+let Anot = function(el) {
   //创建jQuery式的无new 实例化结构
   return new Anot.init(el)
 }
@@ -6,25 +6,25 @@ var Anot = function(el) {
 /*视浏览器情况采用最快的异步回调*/
 Anot.nextTick = new function() {
   // jshint ignore:line
-  var tickImmediate = window.setImmediate
-  var tickObserver = window.MutationObserver
+  let tickImmediate = window.setImmediate
+  let tickObserver = window.MutationObserver
   if (tickImmediate) {
     return tickImmediate.bind(window)
   }
 
-  var queue = []
+  let queue = []
   function callback() {
-    var n = queue.length
-    for (var i = 0; i < n; i++) {
+    let n = queue.length
+    for (let i = 0; i < n; i++) {
       queue[i]()
     }
     queue = queue.slice(n)
   }
 
   if (tickObserver) {
-    var node = document.createTextNode('anot')
+    let node = document.createTextNode('anot')
     new tickObserver(callback).observe(node, { characterData: true }) // jshint ignore:line
-    var bool = false
+    let bool = false
     return function(fn) {
       queue.push(fn)
       bool = !bool
@@ -103,11 +103,11 @@ Anot.isPlainObject = function(obj) {
   )
 }
 
-var VMODELS = (Anot.vmodels = {}) //所有vmodel都储存在这里
+let VMODELS = (Anot.vmodels = {}) //所有vmodel都储存在这里
 Anot.init = function(source) {
   if (Anot.isPlainObject(source)) {
-    var $id = source.$id
-    var vm = null
+    let $id = source.$id
+    let vm = null
     if (!$id) {
       log('warning: vm必须指定id')
     }
@@ -116,12 +116,12 @@ Anot.init = function(source) {
     VMODELS[$id] = vm
 
     Anot.nextTick(function() {
-      var $elem = document.querySelector('[anot=' + vm.$id + ']')
+      let $elem = document.querySelector('[anot=' + vm.$id + ']')
       if ($elem) {
         if ($elem === DOC.body) {
           scanTag($elem, [])
         } else {
-          var _parent = $elem
+          let _parent = $elem
           while ((_parent = _parent.parentNode)) {
             if (_parent.__VM__) {
               break
@@ -141,7 +141,7 @@ Anot.fn = Anot.prototype = Anot.init.prototype
 
 //与jQuery.extend方法，可用于浅拷贝，深拷贝
 Anot.mix = Anot.fn.mix = function() {
-  var options,
+  let options,
     name,
     src,
     copy,
@@ -208,7 +208,7 @@ function cacheStore(tpye, key, val) {
   }
 
   if (this.type(key) === 'object') {
-    for (var i in key) {
+    for (let i in key) {
       window[tpye].setItem(i, key[i])
     }
     return
@@ -233,7 +233,7 @@ function cacheStore(tpye, key, val) {
 /*判定是否类数组，如节点集合，纯数组，arguments与拥有非负整数的length属性的纯JS对象*/
 function isArrayLike(obj) {
   if (obj && typeof obj === 'object') {
-    var n = obj.length,
+    let n = obj.length,
       str = serialize.call(obj)
     if (/(Array|List|Collection|Map|Arguments)\]$/.test(str)) {
       return true
@@ -275,7 +275,7 @@ Anot.mix({
       end = start || 0
       start = 0
     }
-    var index = -1,
+    let index = -1,
       length = Math.max(0, Math.ceil((end - start) / step)),
       result = new Array(length)
     while (++index < length) {
@@ -288,11 +288,11 @@ Anot.mix({
   eventHooks: {},
   /*绑定事件*/
   bind: function(el, type, fn, phase) {
-    var hooks = Anot.eventHooks
+    let hooks = Anot.eventHooks
     type = type.split(',')
     Anot.each(type, function(i, t) {
       t = t.trim()
-      var hook = hooks[t]
+      let hook = hooks[t]
       if (typeof hook === 'object') {
         type = hook.type || type
         phase = hook.phase || !!phase
@@ -304,12 +304,12 @@ Anot.mix({
   },
   /*卸载事件*/
   unbind: function(el, type, fn, phase) {
-    var hooks = Anot.eventHooks
+    let hooks = Anot.eventHooks
     type = type.split(',')
     fn = fn || noop
     Anot.each(type, function(i, t) {
       t = t.trim()
-      var hook = hooks[t]
+      let hook = hooks[t]
       if (typeof hook === 'object') {
         type = hook.type || type
         phase = hook.phase || !!phase
@@ -322,7 +322,7 @@ Anot.mix({
     if (node instanceof Anot) {
       node = node[0]
     }
-    var prop = /[_-]/.test(name) ? camelize(name) : name,
+    let prop = /[_-]/.test(name) ? camelize(name) : name,
       fn
     name = Anot.cssName(prop) || prop
     if (value === void 0 || typeof value === 'boolean') {
@@ -331,7 +331,7 @@ Anot.mix({
       if (name === 'background') {
         name = 'backgroundColor'
       }
-      var val = fn(node, name)
+      let val = fn(node, name)
       return value === true ? parseFloat(val) || 0 : val
     } else if (value === '') {
       //请除样式
@@ -352,9 +352,9 @@ Anot.mix({
   each: function(obj, fn) {
     if (obj) {
       //排除null, undefined
-      var i = 0
+      let i = 0
       if (isArrayLike(obj)) {
-        for (var n = obj.length; i < n; i++) {
+        for (let n = obj.length; i < n; i++) {
           if (fn(i, obj[i]) === false) break
         }
       } else {
@@ -379,7 +379,7 @@ Anot.mix({
     },
     /*移除数组中第一个匹配传参的那个元素，返回布尔表示成功与否*/
     remove: function(target, item) {
-      var index = target.indexOf(item)
+      let index = target.indexOf(item)
       if (~index) return Anot.Array.removeAt(target, index)
       return false
     }
@@ -391,12 +391,12 @@ Anot.mix({
    * @return
    */
   ls: function() {
-    var args = aslice.call(arguments, 0)
+    let args = aslice.call(arguments, 0)
     args.unshift('localStorage')
     return cacheStore.apply(this, args)
   },
   ss: function() {
-    var args = aslice.call(arguments, 0)
+    let args = aslice.call(arguments, 0)
     args.unshift('sessionStorage')
     return cacheStore.apply(this, args)
   },
@@ -483,16 +483,16 @@ Anot.mix({
   //获取url的参数
   search: function(key) {
     key += ''
-    var uri = location.search
+    let uri = location.search
 
     if (!key || !uri) return null
 
     uri = uri.slice(1)
     uri = uri.split('&')
 
-    var obj = {}
-    for (var i = 0, item; (item = uri[i++]); ) {
-      var tmp = item.split('=')
+    let obj = {}
+    for (let i = 0, item; (item = uri[i++]); ) {
+      let tmp = item.split('=')
       tmp[1] = tmp.length < 2 ? null : tmp[1]
       tmp[1] = decodeURIComponent(tmp[1])
       if (obj.hasOwnProperty(tmp[0])) {
@@ -514,7 +514,7 @@ Anot.mix({
       return log('该浏览器不支持复制到粘贴板')
     }
 
-    var ta = DOC.createElement('textarea')
+    let ta = DOC.createElement('textarea')
     ta.textContent = txt
     ta.style.position = 'fixed'
     ta.style.bottom = '-1000px'
@@ -529,10 +529,10 @@ Anot.mix({
   }
 })
 
-var bindingHandlers = (Anot.bindingHandlers = {})
-var bindingExecutors = (Anot.bindingExecutors = {})
+let bindingHandlers = (Anot.bindingHandlers = {})
+let bindingExecutors = (Anot.bindingExecutors = {})
 
-var directives = (Anot.directives = {})
+let directives = (Anot.directives = {})
 Anot.directive = function(name, obj) {
   bindingHandlers[name] = obj.init = obj.init || noop
   bindingExecutors[name] = obj.update = obj.update || noop
