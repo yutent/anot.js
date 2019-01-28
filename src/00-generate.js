@@ -1,6 +1,7 @@
 /*********************************************************************
  *                    全局变量及方法                                   *
  **********************************************************************/
+const CSS_DEPS = {}
 let bindingID = 1024
 let IEVersion = 0
 if (window.VBArray) {
@@ -11,7 +12,7 @@ let expose = generateID()
 let DOC = window.document
 let head = DOC.head //HEAD元素
 head.insertAdjacentHTML(
-  'afterBegin',
+  'afterbegin',
   '<anot skip class="anot-hide"><style id="anot-style">.anot-hide{ display: none!important } slot{visibility:hidden;}</style></anot>'
 )
 let ifGroup = head.firstChild
@@ -86,3 +87,52 @@ function generateID(mark) {
   mark = (mark && mark + '-') || 'anot-'
   return mark + (++bindingID).toString(16)
 }
+
+/*********************************************************************
+ *                   css import                                      *
+ **********************************************************************/
+
+function getBaseUrl() {
+  if (window.LIBS_BASE_URL) {
+    return
+  }
+  let stack
+  try {
+    throw new Error() // 强制报错,以便捕获e.stack
+  } catch (err) {
+    stack = err.stack
+  }
+  stack = stack.trim().split(/[@ ]+/)
+  if (window.safari) {
+    stack = stack[1]
+  } else {
+    stack = stack.pop()
+  }
+  stack = stack.replace(/(:\\d+)?:\d+([\\w\\W]*)?$/i, '')
+  window.LIBS_BASE_URL = stack.replace(
+    /^([a-z\-]*):\/\/([^\/]+)(\/.*)?/,
+    '$1://$2'
+  )
+}
+
+function importCss(url, baseUrl) {
+  url = url.replace(/^\/+/, '/')
+  if (baseUrl) {
+    url = baseUrl + url
+  } else {
+    if (window.LIBS_BASE_URL) {
+      url = window.LIBS_BASE_URL + url
+    }
+  }
+
+  if (CSS_DEPS[url]) {
+    return
+  }
+  head.insertAdjacentHTML(
+    'afterbegin',
+    '<link rel="stylesheet" href="' + url + '">'
+  )
+  CSS_DEPS[url] = 1
+}
+
+getBaseUrl()
