@@ -1,5 +1,6 @@
 ## Anot.js 2.x
-> Anot 是Anot not only templateEngine的缩写。 它是一款迷你,易用、高性能的前端MVVM框架, fork于avalon。进行了大量的重构,精简部分冗余的API, 同时针对组件拓展进行了优化。
+> Anot 是Anot not only templateEngine的缩写。 它是一款迷你,易用、高性能的前端MVVM框架, fork于avalon。
+>2.0版进行了大量的精简, 移除了非现代浏览器的兼容代码, 移除组件API, 正式引入web component。
 
 >> 2.x版本为 全新版本, 只兼容支持type="module"的浏览器。
 
