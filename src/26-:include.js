@@ -1,6 +1,3 @@
-var getXHR = function() {
-  return new window.XMLHttpRequest() // jshint ignore:line
-}
 //将所有远程加载的模板,以字符串形式存放到这里
 var templatePool = (Anot.templateCache = {})
 
@@ -26,24 +23,30 @@ function nodesToFrag(nodes) {
 Anot.directive('include', {
   init: directives.attr.init,
   update: function(val) {
+    if (!val) {
+      return
+    }
+
     var binding = this
     var elem = this.element
     var vmodels = binding.vmodels
-    var rendered = binding.includeRendered
+    var loaded = binding.includeLoaded // 加载完的回调
+    var rendered = binding.includeRendered // 渲染完的回调
     var effectClass = binding.effectName && binding.effectClass // 是否开启动画
-    var templateCache = binding.templateCache // 是否data-include-cache
-    var outer = binding.includeReplace // 是否data-include-replace
-    var loaded = binding.includeLoaded
+    var templateCache = binding.templateCache // 是否开启 缓存
+    var outer = binding.includeReplace // 是否替换容器
     var target = outer ? elem.parentNode : elem
-    var _ele = binding._element // data-include-replace binding.element === binding.end
+    var _ele = binding._element // replace binding.element === binding.end
 
     binding.recoverNodes = binding.recoverNodes || Anot.noop
 
     var scanTemplate = function(text) {
-      var _stamp = (binding._stamp = +new Date()) // 过滤掉频繁操作
+      var _stamp = (binding._stamp = Date.now()) // 过滤掉频繁操作
       if (loaded) {
         var newText = loaded.apply(target, [text].concat(vmodels))
-        if (typeof newText === 'string') text = newText
+        if (typeof newText === 'string') {
+          text = newText
+        }
       }
       if (rendered) {
         checkScan(
@@ -104,7 +107,7 @@ Anot.directive('include', {
       if (outer && effectClass) {
         enterEl = _ele
         enterEl.innerHTML = '' // 清空
-        enterEl.setAttribute(':skip', 'true')
+        enterEl.setAttribute('skip', '')
         target.insertBefore(enterEl, binding.end.nextSibling) // 插入到bingding.end之后避免被错误的移动
         before = function() {
           enterEl.insertBefore(fragment, null) // 插入节点
@@ -133,51 +136,33 @@ Anot.directive('include', {
       Anot.effect.apply(enterEl, 'enter', before, after)
     }
 
-    if (!val) return
-
-    var el = val
-
-    if (typeof el === 'object') {
-      if (el.nodeType !== 1) return log('include 不支持非DOM对象')
+    if (templatePool[val]) {
+      Anot.nextTick(function() {
+        scanTemplate(templatePool[val])
+      })
     } else {
-      el = DOC.getElementById(val)
-      if (!el) {
-        if (typeof templatePool[val] === 'string') {
-          Anot.nextTick(function() {
-            scanTemplate(templatePool[val])
-          })
-        } else if (Array.isArray(templatePool[val])) {
-          //#805 防止在循环绑定中发出许多相同的请求
-          templatePool[val].push(scanTemplate)
-        } else {
-          var xhr = getXHR()
-          xhr.onload = function() {
-            if (xhr.status !== 200)
-              return log('获取网络资源出错, httpError[' + xhr.status + ']')
-
-            var text = xhr.responseText
-            for (var f = 0, fn; (fn = templatePool[val][f++]); ) {
-              fn(text)
-            }
-            templatePool[val] = text
-          }
-          xhr.onerror = function() {
-            log(':include load [' + val + '] error')
-          }
-          templatePool[val] = [scanTemplate]
-          xhr.open('GET', val, true)
-          if ('withCredentials' in xhr) {
-            xhr.withCredentials = true
-          }
-          xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest')
-          xhr.send(null)
+      fetch(val, {
+        method: 'get',
+        headers: {
+          'X-Requested-With': 'XMLHttpRequest'
         }
-        return
-      }
+      })
+        .then(res => {
+          if (res.status >= 200 && res.status < 300) {
+            return res.text()
+          } else {
+            return Promise.reject(
+              `获取网络资源出错, ${res.status} (${res.statusText})`
+            )
+          }
+        })
+        .then(text => {
+          templatePool[val] = text
+          scanTemplate(text)
+        })
+        .catch(err => {
+          log(':include load [' + val + '] error\n%c%s', 'color:#f30', err)
+        })
     }
-
-    Anot.nextTick(function() {
-      scanTemplate(el.value || el.innerText || el.innerHTML)
-    })
   }
 })

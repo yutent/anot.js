@@ -50,7 +50,6 @@ const PAD_END = Buffer.from(`
       fn(Anot)
     }
   }
-  window.importCss = importCss
   window.Anot = Anot
   return Anot
 })()

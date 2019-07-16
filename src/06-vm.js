@@ -317,7 +317,6 @@ function observeObject(source, options) {
   hideProperty($vmodel, '$events', {})
   hideProperty($vmodel, '$refs', {})
   hideProperty($vmodel, '$children', [])
-  hideProperty($vmodel, '$components', [])
   hideProperty($vmodel, 'hasOwnProperty', trackBy)
   hideProperty($vmodel, '$mounted', mounted)
   if (options.watch) {

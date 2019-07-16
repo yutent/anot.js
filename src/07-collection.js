@@ -67,9 +67,7 @@ var newProto = {
       _splice.call(this.$track, 0, this.length)
       _splice.call(this, 0, this.length)
     }
-    if (!W3C) {
-      this.$model = toJson(this)
-    }
+
     this.notify()
     this._.length = this.length
   },
@@ -89,9 +87,7 @@ arrayMethods.forEach(function(method) {
     }
     var result = original.apply(this, args)
     addTrack(this.$track, method, args)
-    if (!W3C) {
-      this.$model = toJson(this)
-    }
+
     this.notify()
     this._.length = this.length
     return result
@@ -120,9 +116,7 @@ arrayMethods.forEach(function(method) {
     }
     if (hasSort) {
       sortByIndex(this.$track, indexes)
-      if (!W3C) {
-        this.$model = toJson(this)
-      }
+
       this.notify()
     }
     return this

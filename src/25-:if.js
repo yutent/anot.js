@@ -3,13 +3,18 @@ Anot.directive('if', {
   update: function(val) {
     var binding = this
     var elem = this.element
-    var stamp = (binding.stamp = +new Date())
+    var stamp = (binding.stamp = Date.now())
     var par
     var after = function() {
-      if (stamp !== binding.stamp) return
+      if (stamp !== binding.stamp) {
+        return
+      }
       binding.recoverNode = null
     }
-    if (binding.recoverNode) binding.recoverNode() // 还原现场，有移动节点的都需要还原现场
+    if (binding.recoverNode) {
+      binding.recoverNode() // 还原现场，有移动节点的都需要还原现场
+    }
+
     try {
       if (!elem.parentNode) return
       par = elem.parentNode

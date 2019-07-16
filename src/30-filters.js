@@ -88,7 +88,7 @@ var filters = (Anot.filters = {
   //    <a href="jav  ascript:alert('XSS');">IE67chrome</a>
   //    <a href="jav&#x09;ascript:alert('XSS');">IE67chrome</a>
   //    <a href="jav&#x0A;ascript:alert('XSS');">IE67chrome</a>
-  sanitize: function(str) {
+  xss: function(str) {
     return str.replace(rscripts, '').replace(ropen, function(a, b) {
       var match = a.toLowerCase().match(/<(\w+)\s/)
       if (match) {
@@ -127,25 +127,20 @@ var filters = (Anot.filters = {
   },
   number: numberFormat,
   //日期格式化，类似php的date函数，
-  date: function(stamp, str, second) {
-    second = second === undefined ? false : true
-    var oDate
-    if (!Date.isDate(stamp)) {
-      if (!/[^\d]/.test(stamp)) {
-        stamp -= 0
-        if (second) {
-          stamp *= 1000
-        }
+  date: function(stamp, str) {
+    var oDate = stamp
+
+    if (!Date.isDate(oDate)) {
+      var tmp = +oDate
+      if (tmp === tmp) {
+        oDate = tmp
       }
 
-      oDate = new Date(stamp)
-      if (oDate + '' === 'Invalid Date') {
+      oDate = new Date(oDate)
+      if (oDate.toString() === 'Invalid Date') {
         return 'Invalid Date'
       }
-    } else {
-      oDate = stamp
     }
     return oDate.format(str)
   }
 })
-

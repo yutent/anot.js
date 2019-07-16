@@ -6,14 +6,6 @@
 var stopScan = oneObject(
   'area,base,basefont,br,col,command,embed,hr,img,input,link,meta,param,source,track,wbr,noscript,script,style,textarea'.toUpperCase()
 )
-function isWidget(el) {
-  //如果是组件,则返回组件的名字
-  var name = el.nodeName.toLowerCase()
-  if (/^anot-([a-z][a-z0-9\-]*)$/.test(name)) {
-    return RegExp.$1
-  }
-  return null
-}
 
 function isRef(el) {
   return el.hasAttribute('ref') ? el.getAttribute('ref') : null
@@ -57,30 +49,8 @@ function executeBindings(bindings, vmodels) {
   bindings.length = 0
 }
 
-//https://github.com/RubyLouvre/Anot/issues/636
-var mergeTextNodes =
-  IEVersion && window.MutationObserver
-    ? function(elem) {
-        var node = elem.firstChild,
-          text
-        while (node) {
-          var aaa = node.nextSibling
-          if (node.nodeType === 3) {
-            if (text) {
-              text.nodeValue += node.nodeValue
-              elem.removeChild(node)
-            } else {
-              text = node
-            }
-          } else {
-            text = null
-          }
-          node = aaa
-        }
-      }
-    : 0
 var roneTime = /^\s*::/
-var rmsAttr = /:(\w+)-?(.*)/
+var rmsAttr = /:(\w+)-?(.*)|@(.*)/
 
 var events = oneObject(
   'animationend,blur,change,input,click,dblclick,focus,keydown,keypress,keyup,mousedown,mouseenter,mouseleave,mousemove,mouseout,mouseover,mouseup,scan,scroll,submit'
@@ -93,45 +63,7 @@ function bindingSorter(a, b) {
 }
 
 var rnoCollect = /^(:\S+|data-\S+|on[a-z]+|style|class)$/
-var ronattr = '__fn__'
-var specifiedVars = [':disabled', ':loading', ':value']
 var filterTypes = ['html', 'text', 'attr', 'data']
-function getOptionsFromTag(elem, vmodels) {
-  var attributes = aslice.call(elem.attributes, 0)
-  var ret = {}
-  var vm = vmodels[0] || {}
-
-  for (var i = 0, attr; (attr = attributes[i++]); ) {
-    var name = attr.name
-    if (
-      (attr.specified && !rnoCollect.test(name)) ||
-      specifiedVars.includes(name)
-    ) {
-      elem.removeAttribute(name)
-      if (name.indexOf(ronattr) === 0) {
-        name = attr.value.slice(6)
-        ret[name] = elem[attr.value]
-        delete elem[attr.value]
-      } else {
-        var camelizeName = camelize(name)
-        if (camelizeName.indexOf('@') === 0) {
-          camelizeName = camelizeName.slice(1)
-          attr.value = attr.value.replace(/\(.*\)$/, '')
-          if (vm.$id.slice(0, 10) === 'proxy-each') {
-            vm = vm.$up
-          }
-          var fn = parseVmValue(vm, attr.value)
-          if (fn && typeof fn === 'function') {
-            ret[camelizeName] = fn.bind(vm)
-          }
-        } else {
-          ret[camelizeName] = parseData(attr.value)
-        }
-      }
-    }
-  }
-  return ret
-}
 
 function scanAttr(elem, vmodels, match) {
   var scanNode = true
@@ -151,9 +83,10 @@ function scanAttr(elem, vmodels, match) {
           //如果是以指定前缀命名的
           var type = match[1]
           var param = match[2] || ''
+          var eparam = match[3] || '' // 事件绑定的简写
           var value = attr.value
-          if (events[type]) {
-            param = type
+          if (events[type] || events[eparam]) {
+            param = type || eparam
             type = 'on'
           }
           if (directives[type]) {
@@ -171,6 +104,7 @@ function scanAttr(elem, vmodels, match) {
                 (directives[type].priority || type.charCodeAt(0) * 10) +
                 (Number(param.replace(/\D/g, '')) || 0)
             }
+            // 如果指令允许使用过滤器
             if (filterTypes.includes(type)) {
               var filters = getToken(value).filters
               binding.expr = binding.expr.replace(filters, '')
@@ -211,12 +145,7 @@ function scanAttr(elem, vmodels, match) {
       executeBindings(bindings, vmodels)
     }
   }
-  if (
-    scanNode &&
-    !stopScan[elem.tagName] &&
-    (isWidget(elem) ? elem.msResolved : 1)
-  ) {
-    mergeTextNodes && mergeTextNodes(elem)
+  if (scanNode && !stopScan[elem.tagName]) {
     scanNodeList(elem, vmodels) //扫描子孙元素
   }
 }
@@ -239,33 +168,11 @@ function scanNodeArray(nodes, vmodels) {
     switch (node.nodeType) {
       case 1:
         var elem = node
-        if (
-          !elem.msResolved &&
-          elem.parentNode &&
-          elem.parentNode.nodeType === 1
-        ) {
-          var widget = isWidget(elem)
-
-          if (widget) {
-            elem.setAttribute('is-widget', '')
-            elem.removeAttribute(':if')
-            elem.removeAttribute(':if-loop')
-            componentQueue.push({
-              element: elem,
-              vmodels: vmodels,
-              name: widget
-            })
-            if (Anot.components[widget]) {
-              // log(widget, Anot.components)
-              //确保所有:attr-name扫描完再处理
-              _delay_component(widget)
-            }
-          } else {
-            // 非组件才检查 ref属性
-            var ref = isRef(elem)
-            if (ref && vmodels.length) {
-              vmodels[0].$refs[ref] = elem
-            }
+        if (elem.parentNode && elem.parentNode.nodeType === 1) {
+          // 非组件才检查 ref属性
+          var ref = isRef(elem)
+          if (ref && vmodels.length) {
+            vmodels[0].$refs[ref] = elem
           }
         }
 

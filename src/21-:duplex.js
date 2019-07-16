@@ -35,12 +35,12 @@ var duplexBinding = Anot.directive('duplex', {
         elem.tagName === 'SELECT'
           ? 'select'
           : elem.type === 'checkbox'
-            ? 'checkbox'
-            : elem.type === 'radio'
-              ? 'radio'
-              : /^change/.test(elem.getAttribute('data-event'))
-                ? 'change'
-                : 'input'
+          ? 'checkbox'
+          : elem.type === 'radio'
+          ? 'radio'
+          : /^change/.test(elem.getAttribute('data-event'))
+          ? 'change'
+          : 'input'
     }
     elem.expr = binding.expr
     //===================绑定事件======================
@@ -72,7 +72,11 @@ var duplexBinding = Anot.directive('duplex', {
         return
       }
 
-      var lastValue = binding.pipe(val, binding, 'get')
+      var lastValue = binding.pipe(
+        val,
+        binding,
+        'get'
+      )
       binding.oldValue = val
       binding.setter(lastValue)
 
@@ -82,7 +86,11 @@ var duplexBinding = Anot.directive('duplex', {
     switch (binding.xtype) {
       case 'radio':
         bound('click', function() {
-          var lastValue = binding.pipe(elem.value, binding, 'get')
+          var lastValue = binding.pipe(
+            elem.value,
+            binding,
+            'get'
+          )
           binding.setter(lastValue)
           callback.call(elem, lastValue)
         })
@@ -95,7 +103,11 @@ var duplexBinding = Anot.directive('duplex', {
             log(':duplex应用于checkbox上要对应一个数组')
             array = [array]
           }
-          var val = binding.pipe(elem.value, binding, 'get')
+          var val = binding.pipe(
+            elem.value,
+            binding,
+            'get'
+          )
           Anot.Array[method](array, val)
           callback.call(elem, array)
         })
@@ -106,21 +118,27 @@ var duplexBinding = Anot.directive('duplex', {
       case 'input':
         bound('input', updateVModel)
         bound('keyup', updateVModel)
-        if (!IEVersion) {
-          bound('compositionstart', compositionStart)
-          bound('compositionend', compositionEnd)
-          bound('DOMAutoComplete', updateVModel)
-        }
+        bound('compositionstart', compositionStart)
+        bound('compositionend', compositionEnd)
+        bound('DOMAutoComplete', updateVModel)
         break
       case 'select':
         bound('change', function() {
           var val = Anot(elem).val() //字符串或字符串数组
           if (Array.isArray(val)) {
             val = val.map(function(v) {
-              return binding.pipe(v, binding, 'get')
+              return binding.pipe(
+                v,
+                binding,
+                'get'
+              )
             })
           } else {
-            val = binding.pipe(val, binding, 'get')
+            val = binding.pipe(
+              val,
+              binding,
+              'get'
+            )
           }
           if (val + '' !== binding.oldValue) {
             try {
@@ -176,7 +194,11 @@ var duplexBinding = Anot.directive('duplex', {
         elem.value = value
         break
       case 'change':
-        curValue = this.pipe(value, this, 'set') //fix #673
+        curValue = this.pipe(
+          value,
+          this,
+          'set'
+        ) //fix #673
         if (curValue !== this.oldValue) {
           var fixCaret = false
           if (elem.msFocus) {
@@ -201,7 +223,11 @@ var duplexBinding = Anot.directive('duplex', {
         break
       case 'checkbox':
         var array = [].concat(value) //强制转换为数组
-        curValue = this.pipe(elem.value, this, 'get')
+        curValue = this.pipe(
+          elem.value,
+          this,
+          'get'
+        )
         elem.checked = array.indexOf(curValue) > -1
         break
       case 'select':

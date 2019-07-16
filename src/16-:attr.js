@@ -9,25 +9,6 @@ bools.replace(rword, function(name) {
   boolMap[name.toLowerCase()] = name
 })
 
-var propMap = {
-  //属性名映射
-  'accept-charset': 'acceptCharset',
-  char: 'ch',
-  charoff: 'chOff',
-  class: 'className',
-  for: 'htmlFor',
-  'http-equiv': 'httpEquiv'
-}
-
-var anomaly = [
-  'accessKey,bgColor,cellPadding,cellSpacing,codeBase,codeType,colSpan',
-  'dateTime,defaultValue,frameBorder,longDesc,maxLength,marginWidth,marginHeight',
-  'rowSpan,tabIndex,useMap,vSpace,valueType,vAlign'
-].join(',')
-anomaly.replace(rword, function(name) {
-  propMap[name.toLowerCase()] = name
-})
-
 var attrDir = Anot.directive('attr', {
   init: function(binding) {
     //{{aaa}} --> aaa
@@ -46,8 +27,9 @@ var attrDir = Anot.directive('attr', {
         'data-loaded',
         binding.vmodels
       )
-      var outer = (binding.includeReplace = !!Anot(elem).data('includeReplace'))
-      if (Anot(elem).data('cache')) {
+      // 是否直接替换当前容器
+      var outer = (binding.includeReplace = elem.hasAttribute('replace'))
+      if (elem.hasAttribute('cache')) {
         binding.templateCache = {}
       }
       binding.start = DOC.createComment(':include')
@@ -66,17 +48,16 @@ var attrDir = Anot.directive('attr', {
   update: function(val) {
     var elem = this.element
     var obj = {}
-    var vm = this.vmodels[0]
 
     val = toJson(val)
 
     if (this.param) {
-      if (typeof val === 'object' && val !== null) {
+      if (val && typeof val === 'object') {
         if (Array.isArray(val)) {
           obj[this.param] = val
         } else {
           if (Date.isDate(val)) {
-            obj[this.param] = val.toUTCString()
+            obj[this.param] = val.toISOString()
           } else {
             obj[this.param] = val
           }
@@ -85,10 +66,12 @@ var attrDir = Anot.directive('attr', {
         obj[this.param] = val
       }
     } else {
-      if (!val || typeof val !== 'object' || Array.isArray(val)) {
-        return
-      }
-      if (Date.isDate(val)) {
+      if (
+        !val ||
+        typeof val !== 'object' ||
+        Array.isArray(val) ||
+        Date.isDate(val)
+      ) {
         return
       }
 
@@ -97,71 +80,38 @@ var attrDir = Anot.directive('attr', {
 
     for (var i in obj) {
       if (i === 'style') {
-        console.error('设置style样式, 请改用 :css指令')
+        elem.style.cssText = obj[i]
         continue
       }
-      // 通过属性设置回调,必须以@符号开头
-      if (i.indexOf('@') === 0) {
-        if (typeof obj[i] !== 'function') {
-          continue
-        }
-      }
       if (i === 'href' || i === 'src') {
-        //处理IE67自动转义的问题
-        if (!root.hasAttribute) obj[i] = obj[i].replace(/&amp;/g, '&')
-
         elem[i] = obj[i]
-
-        //chrome v37- 下embed标签动态设置的src，无法发起请求
-        if (window.chrome && elem.tagName === 'EMBED') {
-          var _parent = elem.parentNode
-          var com = DOC.createComment(':src')
-          _parent.replaceChild(com, elem)
-          _parent.replaceChild(elem, com)
-        }
       } else {
-        var k = i
-        //古董IE下，部分属性名字要进行映射
-        if (!W3C && propMap[k]) {
-          k = propMap[k]
-        }
         if (obj[i] === false || obj[i] === null || obj[i] === undefined) {
           obj[i] = ''
         }
 
-        if (typeof elem[boolMap[k]] === 'boolean') {
+        if (typeof elem[boolMap[i]] === 'boolean') {
           //布尔属性必须使用el.xxx = true|false方式设值
-          elem[boolMap[k]] = !!obj[i]
+          obj[i] = !!obj[i]
+          elem[boolMap[i]] = obj[i]
 
-          //如果为false, IE全系列下相当于setAttribute(xxx, ''),会影响到样式,需要进一步处理
           if (!obj[i]) {
-            obj[i] = !!obj[i]
-          }
-          if (obj[i] === false) {
-            elem.removeAttribute(k)
+            elem.removeAttribute(boolMap[i])
             continue
           }
         }
 
         //SVG只能使用setAttribute(xxx, yyy), VML只能使用elem.xxx = yyy ,HTML的固有属性必须elem.xxx = yyy
-        var isInnate = rsvg.test(elem)
-          ? false
-          : DOC.namespaces && isVML(elem)
-            ? true
-            : k in elem.cloneNode(false)
+        var isInnate = rsvg.test(elem) ? false : i in elem.cloneNode(false)
         if (isInnate) {
-          elem[k] = obj[i]
+          elem[i] = obj[i]
         } else {
           if (typeof obj[i] === 'object') {
             obj[i] = Date.isDate(obj[i])
-              ? obj[i].toUTCString()
+              ? obj[i].toISOString()
               : JSON.stringify(obj[i])
-          } else if (typeof obj[i] === 'function') {
-            k = ronattr + camelize(k.slice(1))
-            elem[k] = obj[i].bind(vm)
-            obj[i] = k
           }
-          elem.setAttribute(k, obj[i])
+          elem.setAttribute(i, obj[i])
         }
       }
     }

@@ -31,21 +31,6 @@ function camelize(target) {
 })
 
 Anot.fn.mix({
-  hasClass: function(cls) {
-    var el = this[0] || {} //IE10+, chrome8+, firefox3.6+, safari5.1+,opera11.5+支持classList,chrome24+,firefox26+支持classList2.0
-    return el.nodeType === 1 && el.classList.contains(cls)
-  },
-  toggleClass: function(value, stateVal) {
-    var className,
-      i = 0
-    var classNames = String(value).match(/\S+/g) || []
-    var isBool = typeof stateVal === 'boolean'
-    while ((className = classNames[i++])) {
-      var state = isBool ? stateVal : !this.hasClass(className)
-      this[state ? 'addClass' : 'removeClass'](className)
-    }
-    return this
-  },
   attr: function(name, value) {
     if (arguments.length === 2) {
       this[0].setAttribute(name, value)
@@ -55,25 +40,24 @@ Anot.fn.mix({
     }
   },
   data: function(name, value) {
-    name = 'data-' + hyphen(name || '')
-    switch (arguments.length) {
+    var len = arguments.length
+    var dataset = this[0].dataset
+    name = hyphen(name || '')
+    if (!name) {
+      len = 0
+    }
+    switch (len) {
       case 2:
-        this.attr(name, value)
+        dataset[name] = value
         return this
       case 1:
-        var val = this.attr(name)
+        var val = dataset[name]
         return parseData(val)
       case 0:
-        var ret = {}
-        ap.forEach.call(this[0].attributes, function(attr) {
-          if (attr) {
-            name = attr.name
-            if (!name.indexOf('data-')) {
-              name = camelize(name.slice(5))
-              ret[name] = parseData(attr.value)
-            }
-          }
-        })
+        var ret = createMap()
+        for (var i in dataset) {
+          ret[i] = parseData(dataset[i])
+        }
         return ret
     }
   },
@@ -159,27 +143,6 @@ Anot.fn.mix({
   }
 })
 
-if (root.dataset) {
-  Anot.fn.data = function(name, val) {
-    name = name && camelize(name)
-    var dataset = this[0].dataset
-    switch (arguments.length) {
-      case 2:
-        dataset[name] = val
-        return this
-      case 1:
-        val = dataset[name]
-        return parseData(val)
-      case 0:
-        var ret = createMap()
-        for (name in dataset) {
-          ret[name] = parseData(dataset[name])
-        }
-        return ret
-    }
-  }
-}
-
 Anot.parseJSON = JSON.parse
 
 var rbrace = /(?:\{[\s\S]*\}|\[[\s\S]*\])$/
@@ -190,14 +153,14 @@ function parseData(data) {
       data === 'true'
         ? true
         : data === 'false'
-          ? false
-          : data === 'null'
-            ? null
-            : +data + '' === data
-              ? +data
-              : rbrace.test(data)
-                ? JSON.parse(data)
-                : data
+        ? false
+        : data === 'null'
+        ? null
+        : +data + '' === data
+        ? +data
+        : rbrace.test(data)
+        ? JSON.parse(data)
+        : data
   } catch (e) {}
   return data
 }
@@ -236,8 +199,8 @@ function getWindow(node) {
   return node.window && node.document
     ? node
     : node.nodeType === 9
-      ? node.defaultView
-      : false
+    ? node.defaultView
+    : false
 }
 
 //=============================css相关==================================

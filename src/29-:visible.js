@@ -4,11 +4,9 @@ function parseDisplay(nodeName, val) {
   if (!parseDisplay[key]) {
     var node = DOC.createElement(nodeName)
     root.appendChild(node)
-    if (W3C) {
-      val = getComputedStyle(node, null).display
-    } else {
-      val = node.currentStyle.display
-    }
+
+    val = getComputedStyle(node, null).display
+
     root.removeChild(node)
     parseDisplay[key] = val
   }
@@ -27,7 +25,7 @@ Anot.directive('visible', {
       stamp
     var noEffect = !this.effectName
     if (!this.stamp) {
-      stamp = this.stamp = +new Date()
+      stamp = this.stamp = Date.now()
       if (val) {
         elem.style.display = binding.display || ''
         if (Anot(elem).css('display') === 'none') {

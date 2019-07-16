@@ -4,22 +4,22 @@ Anot.directive('css', {
   init: directives.attr.init,
   update: function(val) {
     var $elem = Anot(this.element)
-    if (!this.param) {
-      var obj = val
-      try {
-        if (typeof val === 'object') {
-          if (!Anot.isPlainObject(val)) obj = val.$model
-        } else {
-          obj = new Function('return ' + val)()
-        }
-        for (var i in obj) {
-          $elem.css(i, obj[i])
-        }
-      } catch (err) {
-        log('样式格式错误 %c %s="%s"', 'color:#f00', this.name, this.expr)
-      }
-    } else {
+    if (this.param) {
       $elem.css(this.param, val)
+    } else {
+      if (typeof val !== 'object') {
+        return log(
+          ':css指令格式错误 %c %s="%s"',
+          'color:#f00',
+          this.name,
+          this.expr
+        )
+      }
+      var obj = val
+      if (!Anot.isPlainObject(obj)) {
+        obj = val.$model
+      }
+      $elem.css(obj)
     }
   }
 })

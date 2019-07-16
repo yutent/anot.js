@@ -203,10 +203,6 @@ Anot.mix = Anot.fn.mix = function() {
 }
 
 function cacheStore(tpye, key, val) {
-  if (!window[tpye]) {
-    return log('该浏览器不支持本地储存' + tpye)
-  }
-
   if (this.type(key) === 'object') {
     for (let i in key) {
       window[tpye].setItem(i, key[i])
@@ -322,8 +318,9 @@ Anot.mix({
     if (node instanceof Anot) {
       node = node[0]
     }
-    let prop = /[_-]/.test(name) ? camelize(name) : name,
-      fn
+    var prop = /[_-]/.test(name) ? camelize(name) : name
+    var fn
+
     name = Anot.cssName(prop) || prop
     if (value === void 0 || typeof value === 'boolean') {
       //获取样式
@@ -331,8 +328,8 @@ Anot.mix({
       if (name === 'background') {
         name = 'backgroundColor'
       }
-      let val = fn(node, name)
-      return value === true ? parseFloat(val) || 0 : val
+      var val = fn(node, name)
+      return value === true ? +val || 0 : val
     } else if (value === '') {
       //请除样式
       node.style[name] = ''
@@ -485,7 +482,10 @@ Anot.mix({
     key += ''
     let uri = location.search
 
-    if (!key || !uri) return null
+    if (!key || !uri) {
+      return null
+    }
+    uri = decodeURIComponent(uri)
 
     uri = uri.slice(1)
     uri = uri.split('&')
@@ -494,7 +494,7 @@ Anot.mix({
     for (let i = 0, item; (item = uri[i++]); ) {
       let tmp = item.split('=')
       tmp[1] = tmp.length < 2 ? null : tmp[1]
-      tmp[1] = decodeURIComponent(tmp[1])
+      tmp[1] = tmp[1]
       if (obj.hasOwnProperty(tmp[0])) {
         if (typeof obj[tmp[0]] === 'object') {
           obj[tmp[0]].push(tmp[1])
@@ -523,7 +523,7 @@ Anot.mix({
     try {
       DOC.execCommand('copy')
     } catch (err) {
-      log('复制到粘贴板失败')
+      log('复制到粘贴板失败', err)
     }
     DOC.body.removeChild(ta)
   }
