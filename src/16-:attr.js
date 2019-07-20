@@ -86,22 +86,30 @@ var attrDir = Anot.directive('attr', {
       if (i === 'href' || i === 'src') {
         elem[i] = obj[i]
       } else {
+        // 修正这些值的显示
         if (obj[i] === false || obj[i] === null || obj[i] === undefined) {
           obj[i] = ''
         }
 
-        if (typeof elem[boolMap[i]] === 'boolean') {
+        if (
+          typeof elem[i] === 'boolean' ||
+          typeof elem[boolMap[i]] === 'boolean'
+        ) {
+          var k = i
+          if (boolMap[i] && k !== boolMap[i]) {
+            k = boolMap[i]
+          }
           //布尔属性必须使用el.xxx = true|false方式设值
           obj[i] = !!obj[i]
-          elem[boolMap[i]] = obj[i]
+          elem[k] = obj[i]
 
           if (!obj[i]) {
-            elem.removeAttribute(boolMap[i])
+            elem.removeAttribute(k)
             continue
           }
         }
 
-        //SVG只能使用setAttribute(xxx, yyy), VML只能使用elem.xxx = yyy ,HTML的固有属性必须elem.xxx = yyy
+        //SVG只能使用setAttribute(xxx, yyy), HTML的固有属性必须elem.xxx = yyy
         var isInnate = rsvg.test(elem) ? false : i in elem.cloneNode(false)
         if (isInnate) {
           elem[i] = obj[i]

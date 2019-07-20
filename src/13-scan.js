@@ -56,7 +56,7 @@ var events = oneObject(
   'animationend,blur,change,input,click,dblclick,focus,keydown,keypress,keyup,mousedown,mouseenter,mouseleave,mousemove,mouseout,mouseover,mouseup,scan,scroll,submit'
 )
 var obsoleteAttrs = oneObject(
-  'value,title,alt,checked,selected,disabled,readonly,enabled,href,src'
+  'value,title,alt,checked,selected,disabled,readonly,loading,enabled,href,src'
 )
 function bindingSorter(a, b) {
   return a.priority - b.priority
@@ -85,8 +85,12 @@ function scanAttr(elem, vmodels, match) {
           var param = match[2] || ''
           var eparam = match[3] || '' // 事件绑定的简写
           var value = attr.value
-          if (events[type] || events[eparam]) {
-            param = type || eparam
+          if (obsoleteAttrs[type]) {
+            param = type
+            type = 'attr'
+          }
+          if (eparam) {
+            param = eparam
             type = 'on'
           }
           if (directives[type]) {
