@@ -4,7 +4,7 @@ let Anot = function(el) {
 }
 
 /*视浏览器情况采用最快的异步回调*/
-Anot.nextTick = new function() {
+Anot.nextTick = new (function() {
   // jshint ignore:line
   let tickImmediate = window.setImmediate
   let tickObserver = window.MutationObserver
@@ -35,7 +35,7 @@ Anot.nextTick = new function() {
   return function(fn) {
     setTimeout(fn, 4)
   }
-}() // jshint ignore:line
+})() // jshint ignore:line
 
 /*********************************************************************
  *                 Anot的静态方法定义区                              *
@@ -290,7 +290,7 @@ Anot.mix({
       t = t.trim()
       let hook = hooks[t]
       if (typeof hook === 'object') {
-        type = hook.type || type
+        t = hook.type || type
         phase = hook.phase || !!phase
         fn = hook.fix ? hook.fix(el, fn) : fn
       }
@@ -307,7 +307,7 @@ Anot.mix({
       t = t.trim()
       let hook = hooks[t]
       if (typeof hook === 'object') {
-        type = hook.type || type
+        t = hook.type || type
         phase = hook.phase || !!phase
       }
       el.removeEventListener(t, fn, phase)
@@ -349,13 +349,12 @@ Anot.mix({
   each: function(obj, fn) {
     if (obj) {
       //排除null, undefined
-      let i = 0
       if (isArrayLike(obj)) {
-        for (let n = obj.length; i < n; i++) {
+        for (let i = 0, n = obj.length; i < n; i++) {
           if (fn(i, obj[i]) === false) break
         }
       } else {
-        for (i in obj) {
+        for (let i in obj) {
           if (obj.hasOwnProperty(i) && fn(i, obj[i]) === false) {
             break
           }

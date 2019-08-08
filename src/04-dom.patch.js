@@ -21,46 +21,6 @@ Anot.contains = function(root, el) {
 
 let eventHooks = Anot.eventHooks
 
-//针对firefox, chrome修正mouseenter, mouseleave(chrome30+)
-if (!('onmouseenter' in root)) {
-  Anot.each(
-    {
-      mouseenter: 'mouseover',
-      mouseleave: 'mouseout'
-    },
-    function(origType, fixType) {
-      eventHooks[origType] = {
-        type: fixType,
-        fix: function(elem, fn) {
-          return function(e) {
-            let t = e.relatedTarget
-            if (!t || (t !== elem && !(elem.compareDocumentPosition(t) & 16))) {
-              delete e.type
-              e.type = origType
-              return fn.call(elem, e)
-            }
-          }
-        }
-      }
-    }
-  )
-}
-
-//针对IE9+, w3c修正animationend
-Anot.each(
-  {
-    AnimationEvent: 'animationend',
-    WebKitAnimationEvent: 'webkitAnimationEnd'
-  },
-  function(construct, fixType) {
-    if (window[construct] && !eventHooks.animationend) {
-      eventHooks.animationend = {
-        type: fixType
-      }
-    }
-  }
-)
-
 if (DOC.onmousewheel === void 0) {
   /* IE6-11 chrome mousewheel wheelDetla 下 -120 上 120
      firefox DOMMouseScroll detail 下3 上-3
