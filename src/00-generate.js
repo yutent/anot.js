@@ -9,7 +9,7 @@ var DOC = window.document
 var head = DOC.head //HEAD元素
 head.insertAdjacentHTML(
   'afterbegin',
-  '<anot skip class="anot-hide"><style id="anot-style">.anot-hide{ display: none!important } slot{visibility:hidden;}</style></anot>'
+  '<anot skip class="anot-hide"><style id="anot-style">.anot-hide{ display: none!important }</style></anot>'
 )
 var ifGroup = head.firstChild
 
