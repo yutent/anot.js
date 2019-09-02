@@ -423,7 +423,7 @@ Anot.mix({
 
       if ((this.type(val) == 'string' && val.trim() === '') || val === null) {
         document.cookie =
-          encodeURIComponent(key) +
+          encode(key) +
           '=; expires=Thu, 01 Jan 1970 00:00:00 GMT; domain=' +
           opt.domain +
           '; path=' +
@@ -447,9 +447,9 @@ Anot.mix({
         }
       }
       document.cookie =
-        encodeURIComponent(key) +
+        encode(key) +
         '=' +
-        encodeURIComponent(val) +
+        encode(val) +
         opt.expires +
         '; domain=' +
         opt.domain +
@@ -463,11 +463,11 @@ Anot.mix({
         return document.cookie
       }
       return (
-        decodeURIComponent(
+        decode(
           document.cookie.replace(
             new RegExp(
               '(?:(?:^|.*;)\\s*' +
-                encodeURIComponent(key).replace(/[\-\.\+\*]/g, '\\$&') +
+                encode(key).replace(/[\-\.\+\*]/g, '\\$&') +
                 '\\s*\\=\\s*([^;]*).*$)|^.*$'
             ),
             '$1'
@@ -484,7 +484,7 @@ Anot.mix({
     if (!key || !uri) {
       return null
     }
-    uri = decodeURIComponent(uri)
+    uri = decode(uri)
 
     uri = uri.slice(1)
     uri = uri.split('&')
@@ -509,22 +509,11 @@ Anot.mix({
   },
   //复制文本到粘贴板
   copy: function(txt) {
-    if (!DOC.queryCommandSupported || !DOC.queryCommandSupported('copy')) {
-      return log('该浏览器不支持复制到粘贴板')
-    }
-
-    let ta = DOC.createElement('textarea')
-    ta.textContent = txt
-    ta.style.position = 'fixed'
-    ta.style.bottom = '-1000px'
-    DOC.body.appendChild(ta)
-    ta.select()
     try {
-      DOC.execCommand('copy')
+      navigator.clipboard.writeText(txt)
     } catch (err) {
       log('复制到粘贴板失败', err)
     }
-    DOC.body.removeChild(ta)
   }
 })
 

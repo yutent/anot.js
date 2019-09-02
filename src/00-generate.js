@@ -31,6 +31,8 @@ function createMap() {
   return Object.create(null)
 }
 
+var encode = encodeURIComponent
+var decode = decodeURIComponent
 var subscribers = '$' + expose
 
 var nullObject = {} //作用类似于noop，只用于代码防御，千万不要在它上面添加属性
