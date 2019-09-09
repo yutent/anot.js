@@ -20,6 +20,26 @@ function nodesToFrag(nodes) {
   }
   return frag
 }
+
+function _fetch(url) {
+  var xhr = new XMLHttpRequest()
+  var defer = Promise.defer()
+  xhr.open('GET', url, true)
+  xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest')
+  xhr.responseType = 'text'
+  xhr.onreadystatechange = function() {
+    if (this.readyState === 4) {
+      if (this.status >= 200 && this.status < 400) {
+        defer.resolve(this.response)
+      } else {
+        defer.reject(this)
+      }
+    }
+  }
+  xhr.send(null)
+  return defer.promise
+}
+
 Anot.directive('include', {
   init: directives.attr.init,
   update: function(val) {
@@ -141,27 +161,17 @@ Anot.directive('include', {
         scanTemplate(templatePool[val])
       })
     } else {
-      fetch(val, {
-        method: 'get',
-        headers: {
-          'X-Requested-With': 'XMLHttpRequest'
-        }
-      })
-        .then(res => {
-          if (res.status >= 200 && res.status < 300) {
-            return res.text()
-          } else {
-            return Promise.reject(
-              `获取网络资源出错, ${res.status} (${res.statusText})`
-            )
-          }
-        })
+      _fetch(val)
         .then(text => {
           templatePool[val] = text
           scanTemplate(text)
         })
         .catch(err => {
-          log(':include load [' + val + '] error\n%c%s', 'color:#f30', err)
+          log(
+            ':include load [' + val + '] error\n%c%s',
+            'color:#f30',
+            `获取网络资源出错, ${err.status} (${err.statusText})`
+          )
         })
     }
   }
