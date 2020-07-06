@@ -47,7 +47,7 @@ var attrDir = Anot.directive('attr', {
   },
   update: function(val) {
     var elem = this.element
-    var obj = {}
+    var obj = Object.create(null)
     var isSVG = rsvg.test(elem)
 
     val = toJson(val)
@@ -83,6 +83,13 @@ var attrDir = Anot.directive('attr', {
       if (i === 'style') {
         elem.style.cssText = obj[i]
         continue
+      }
+
+      if (i.slice(0, 6) === 'xlink:') {
+        var k = i
+        i = i.slice(6)
+        obj[i] = obj[k]
+        delete obj[k]
       }
       // 修正这些值的显示
       if (obj[i] === false || obj[i] === null || obj[i] === undefined) {
