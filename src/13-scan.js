@@ -50,7 +50,7 @@ function executeBindings(bindings, vmodels) {
 }
 
 var roneTime = /^\s*::/
-var rmsAttr = /:(\w+)-?(.*)|@(.*)/
+var rmsAttr = /^:(\w+)-?(.*)|@(.*)/
 
 var events = oneObject(
   'animationend,blur,change,input,click,dblclick,focus,keydown,keypress,keyup,mousedown,mouseenter,mouseleave,mousemove,mouseout,mouseover,mouseup,scan,scroll,submit'
@@ -372,6 +372,8 @@ function scanText(textNode, vmodels, index) {
       anotFragment.appendChild(node)
     }
     textNode.parentNode.replaceChild(anotFragment, textNode)
-    if (bindings.length) executeBindings(bindings, vmodels)
+    if (bindings.length) {
+      executeBindings(bindings, vmodels)
+    }
   }
 }
