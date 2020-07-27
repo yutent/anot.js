@@ -16,7 +16,7 @@ npm run prod
 ```
 执行完, 会打包为2个版本, 分别是
 - anot.js  普通版(需要支持es6 module的现代浏览器)
-- anot-touch.js  带触摸的版本(需要支持es6 module的现代浏览器)
+- anot.touch.js  带触摸事件的版本(需要支持es6 module的现代浏览器)
 
 
 ### 文档:

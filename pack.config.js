@@ -1,6 +1,6 @@
 /**
  *
- * @authors yutent (yutent@doui.cc)
+ * @authors yutent (yutent.io@gmail.com)
  * @date    2018-08-04 01:00:06
  */
 
@@ -12,8 +12,9 @@ const path = require('path')
 const chokidar = require('chokidar')
 const uglify = require('uglify-es')
 const chalk = require('chalk')
+const config = require('./package.json')
 const log = console.log
-const VERSION = '2.0.0'
+const VERSION = config.version
 
 const PACK_DIR = path.resolve('./dist')
 const SOURCE_DIR = path.resolve('./src/')
@@ -59,9 +60,9 @@ export default _Anot
 function comment({ touch } = {}) {
   return `/*==================================================
  * Anot ${touch ? 'touch' : 'normal'} version for future browsers
- * @authors yutent (yutent@doui.cc)
- * @date    2017-03-21 21:05:57
- * V${VERSION}
+ * @authors yutent<yutent.io@gmail.com>
+ * @date    ${new Date().format()}
+ * @version v${VERSION}
  * 
  ==================================================*/
  `
@@ -115,8 +116,8 @@ function packNoCompress(file) {
    * 打包带触摸事件的未来版的 anot
    * --------------------------------------------------------
    */
-  fs.echo(Buffer.concat([PAD_START, touchVer, PAD_END]), './dist/anot-touch.js')
-  log('%s 打包完成...', chalk.green('anot-touch.js'))
+  fs.echo(Buffer.concat([PAD_START, touchVer, PAD_END]), './dist/anot.touch.js')
+  log('%s 打包完成...', chalk.green('anot.touch.js'))
 }
 
 // 打包并压缩
@@ -144,14 +145,14 @@ function packAndCompress() {
    * 打包带触摸事件的未来版的 anot
    * --------------------------------------------------------
    */
-  log('正在打包 anot-touch.js...')
+  log('正在打包 anot.touch.js...')
   let touchVerPack = Buffer.concat([PAD_START, touchVer, PAD_END]).toString()
 
   fs.echo(
     comment({ touch: true }) + uglify.minify(touchVerPack).code,
-    './dist/anot-touch.js'
+    './dist/anot.touch.js'
   )
-  log(chalk.green('anot-touch.js 打包压缩完成!'))
+  log(chalk.green('anot.touch.js 打包压缩完成!'))
 }
 
 let args = process.argv.slice(2)

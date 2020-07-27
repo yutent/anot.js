@@ -264,8 +264,8 @@ function observeObject(source, options) {
             return (old = value.get.call(this))
           },
           set: function(x) {
-            var older = old,
-              newer
+            var older = old
+            var newer
             value.set.call(this, x)
             newer = this[key]
             if (this.$fire && newer !== older) {
