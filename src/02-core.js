@@ -4,14 +4,7 @@ let Anot = function(el) {
 }
 
 /*视浏览器情况采用最快的异步回调*/
-Anot.nextTick = new (function() {
-  // jshint ignore:line
-  let tickImmediate = window.setImmediate
-  let tickObserver = window.MutationObserver
-  if (tickImmediate) {
-    return tickImmediate.bind(window)
-  }
-
+Anot.nextTick = (function() {
   let queue = []
   function callback() {
     let n = queue.length
@@ -21,21 +14,16 @@ Anot.nextTick = new (function() {
     queue = queue.slice(n)
   }
 
-  if (tickObserver) {
-    let node = document.createTextNode('anot')
-    new tickObserver(callback).observe(node, { characterData: true }) // jshint ignore:line
-    let bool = false
-    return function(fn) {
-      queue.push(fn)
-      bool = !bool
-      node.data = bool
-    }
-  }
+  let node = document.createTextNode('<!-- -->')
+  new MutationObserver(callback).observe(node, { characterData: true })
 
+  let bool = false
   return function(fn) {
-    setTimeout(fn, 4)
+    queue.push(fn)
+    bool = !bool
+    node.data = bool
   }
-})() // jshint ignore:line
+})()
 
 /*********************************************************************
  *                 Anot的静态方法定义区                              *
