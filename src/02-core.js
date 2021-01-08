@@ -466,7 +466,6 @@ Anot.mix({
   },
   //获取url的参数
   search: function(key) {
-    key += ''
     let uri = location.search
 
     if (!uri) {
