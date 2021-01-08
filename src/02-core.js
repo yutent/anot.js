@@ -469,7 +469,7 @@ Anot.mix({
     key += ''
     let uri = location.search
 
-    if (!key || !uri) {
+    if (!uri) {
       return null
     }
     uri = decode(uri)
@@ -493,7 +493,11 @@ Anot.mix({
         obj[tmp[0]] = tmp[1]
       }
     }
-    return obj.hasOwnProperty(key) ? obj[key] : null
+    if (key) {
+      return obj.hasOwnProperty(key) ? obj[key] : null
+    } else {
+      return obj
+    }
   },
   //复制文本到粘贴板
   copy: function(txt) {
