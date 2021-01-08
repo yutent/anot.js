@@ -14,9 +14,9 @@
   "devDependencies": {
     "chalk": "^2.4.1",
     "chokidar": "^2.0.4",
-    "es.shim": "^1.1.2",
-    "iofs": "^1.1.0",
-    "uglify-es": "^3.3.9"
+    "es.shim": "^2.0.1",
+    "iofs": "^1.5.2",
+    "terser": "^5.0.0"
   },
   "repository": "https://github.com/yutent/anot.js.git",
   "author": "yutent",

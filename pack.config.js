@@ -10,7 +10,7 @@ require('es.shim')
 const fs = require('iofs')
 const path = require('path')
 const chokidar = require('chokidar')
-const uglify = require('uglify-es')
+const uglify = require('terser')
 const chalk = require('chalk')
 const config = require('./package.json')
 const log = console.log
