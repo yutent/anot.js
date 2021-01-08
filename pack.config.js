@@ -4,13 +4,11 @@
  * @date    2018-08-04 01:00:06
  */
 
-'use strict'
-
 require('es.shim')
 const fs = require('iofs')
 const path = require('path')
 const chokidar = require('chokidar')
-const uglify = require('terser')
+const { minify } = require('terser')
 const chalk = require('chalk')
 const config = require('./package.json')
 const log = console.log
@@ -137,8 +135,11 @@ function packAndCompress() {
    */
   log('正在打包 anot.js...')
   let normalVerPack = Buffer.concat([PAD_START, normalVer, PAD_END]).toString()
-  fs.echo(comment() + uglify.minify(normalVerPack).code, './dist/anot.js')
-  log(chalk.green('anot.js 打包压缩完成!'))
+
+  minify(normalVerPack, { sourceMap: false }).then(res => {
+    fs.echo(comment() + res.code, './dist/anot.js')
+    log(chalk.green('anot.js 打包压缩完成!'))
+  })
 
   /**
    * --------------------------------------------------------
@@ -148,11 +149,10 @@ function packAndCompress() {
   log('正在打包 anot.touch.js...')
   let touchVerPack = Buffer.concat([PAD_START, touchVer, PAD_END]).toString()
 
-  fs.echo(
-    comment({ touch: true }) + uglify.minify(touchVerPack).code,
-    './dist/anot.touch.js'
-  )
-  log(chalk.green('anot.touch.js 打包压缩完成!'))
+  minify(touchVerPack, { sourceMap: false }).then(res => {
+    fs.echo(comment({ touch: true }) + res.code, './dist/anot.touch.js')
+    log(chalk.green('anot.touch.js 打包压缩完成!'))
+  })
 }
 
 let args = process.argv.slice(2)
